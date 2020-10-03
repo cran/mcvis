@@ -20,13 +20,13 @@ summary(lm(y ~ X))
 library(mcvis)
 mcvis_result = mcvis(X = X)
 
-plot(mcvis_result)
-
 mcvis_result
 
 ## -----------------------------------------------------------------------------
-library(ggplot2)
-ggplot(mcvis_result)
+plot(mcvis_result)
+
+## -----------------------------------------------------------------------------
+plot(mcvis_result, type = "igraph")
 
 ## -----------------------------------------------------------------------------
 library(mplot)
@@ -35,8 +35,8 @@ X = artificialeg[,1:9]
 round(cor(X), 2)
 
 mcvis_result = mcvis(X)
+mcvis_result
 plot(mcvis_result)
-ggplot(mcvis_result)
 
 ## -----------------------------------------------------------------------------
 class(mcvis_result)

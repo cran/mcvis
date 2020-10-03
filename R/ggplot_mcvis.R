@@ -1,44 +1,18 @@
-#' @author Chen Lin, Kevin Wang, Samuel Mueller
-#' @title ggplot visualisation for mcvis method
-#' @description
-#' The ggplot_mcvis function first orders the MC-index matrix columns by
-#' the magnitude of the MC-index for the tau1, which is the inverse of the smallest eigenvalue
-#' Under this ordering,
-#' the first entry of the matrix is classified as a "category 5" thickness in plotting
-#' Subsequently, other lines are sequentially put in the categories of
-#' \itemize{
-#'  \item category 5: 0.5 or above
-#'  \item category 4: 0.3 - 0.5
-#'  \item category 3: 0.2 - 0.3
-#'  \item category 2: 0.1 - 0.2
-#'  \item category 1: 0.0 - 0.1
-#' }
-#' @param x Output of the mcvis function
-#' @param eig_max The maximum number of eigenvalues to be displayed on the plot.
-#' @param var_max The maximum number of variables (i.e. columns) to be displayed on the plot.
+#' @param mcvis_result Output of the mcvis function
+#' @param label_dodge If variable names are too long, it might be helpful to dodge the labelling. Default to FALSE.
 #' @import ggplot2
 #' @importFrom reshape2 melt
 #' @importFrom rlang .data
-#' @return A ggplot
+#' @rdname plot.mcvis
 #' @export
-#' @examples
-#' library(ggplot2)
-#' set.seed(1)
-#' p = 10
-#' n = 100
-#' X = matrix(rnorm(n*p, 0, 5), ncol = p)
-#' X[,1] = X[,2] + rnorm(n, 0, 0.1)
-#' mcvis_result = mcvis(X)
-#' ggplot(mcvis_result)
-#' ggplot(mcvis_result, eig_max = p)
-
-ggplot.mcvis = function(x,
+ggplot_mcvis = function(mcvis_result,
                         eig_max = 1L,
-                        var_max = ncol(x$MC))
+                        var_max = ncol(mcvis_result$MC),
+                        label_dodge = FALSE)
   ##if eig_max==1 or var_max==1, the function fails to give an output.
 {
   MC_ordered = make_MC_ordered(
-    mcvis_result = x,
+    mcvis_result = mcvis_result,
     eig_max = eig_max,
     var_max = var_max)
 
@@ -46,24 +20,26 @@ ggplot.mcvis = function(x,
 
   #################  ggplot #######################
   plotdf = make_plotdf(MC_ordered)
-  ggplot_size_manual = c(0, 0.2, 0.5, 1, 2)
-  ggplot_alpha_manual = c(0, 0.2, 0.5, 1, 1)
+  ggplot_size_manual = c(0, 0.5, 1, 2)
+  ggplot_alpha_manual = c(0, 0.5, 1, 1)
 
-  axis_1 = data.frame(x=rangeTransform(as.integer(unique(plotdf$cols))),
-                      y=0, label=as.character(unique(plotdf$cols)))
+  if(label_dodge){
+    axis_1 = data.frame(x=rangeTransform(as.integer(unique(plotdf$cols))),
+                        y=0, label=as.character(unique(plotdf$cols)),
+                        y_jitter = rep(c(0, 0.1), length.out = length(plotdf$cols)))
+  } else {
+    axis_1 = data.frame(x=rangeTransform(as.integer(unique(plotdf$cols))),
+                        y=0, label=as.character(unique(plotdf$cols)),
+                        y_jitter = rep(0, length.out = length(plotdf$cols)))
+  }
 
   axis_2 = data.frame(x=rangeTransform(as.integer(unique(plotdf$taus))),
                       y=1, label=as.character(unique(plotdf$taus)))
 
   linetype_manual = c("dotted","solid")
   names(linetype_manual) = c("others", taup)
-
+  # browser()
   gg = ggplot2::ggplot(data=plotdf) +
-    theme_bw() +
-    theme(axis.title=element_blank()) +
-    theme(axis.text=element_blank()) +
-    theme(axis.ticks=element_blank()) +
-    theme(panel.grid=element_blank()) +
     geom_segment(aes(
       x=.data$cols_norm, xend=.data$taus_norm,
       y=.data$y1, yend=.data$y2,
@@ -71,27 +47,37 @@ ggplot.mcvis = function(x,
       size = .data$ggplot_size_cat,
       alpha = .data$ggplot_size_cat,
       linetype = .data$linetype)) +
+    geom_text(data=axis_1, aes(label=.data$label, x=.data$x, y=.data$y - 0.075 - .data$y_jitter)) +
+    geom_text(data=axis_2, aes(label=.data$label, x=.data$x, y=.data$y + 0.075)) +
+    geom_segment(data=axis_1, aes(x=.data$x, xend=.data$x, y=.data$y, yend=.data$y-0.025), size=0.7) +
+    geom_segment(data=axis_2, aes(x=.data$x, xend=.data$x, y=.data$y, yend=.data$y+0.025), size=0.7) +
+    geom_segment(x=0, xend=1, y=0, yend=0, size=0.7) +
+    geom_segment(x=0, xend=1, y=1, yend=1, size=0.7) +
     scale_colour_brewer(palette = "Set1", drop = FALSE, direction = -1) +
     scale_size_manual(values = ggplot_size_manual, drop = FALSE) +
     scale_alpha_manual(values = ggplot_alpha_manual, drop = FALSE) +
     scale_linetype_manual(values = linetype_manual, drop = FALSE) +
-    geom_segment(x=0, xend=1, y=0, yend=0, size=0.7) +
-    geom_segment(x=0, xend=1, y=1, yend=1, size=0.7) +
-    scale_y_continuous(limits=c(-0.2, 1.2), expand=c(0, 0)) +
-    geom_segment(data=axis_1, aes(x=.data$x, xend=.data$x, y=.data$y, yend=.data$y-0.025), size=0.7) +
-    geom_segment(data=axis_2, aes(x=.data$x, xend=.data$x, y=.data$y, yend=.data$y+0.025), size=0.7) +
-    geom_text(data=axis_1, aes(label=.data$label, x=.data$x, y=.data$y - 0.075)) +
-    geom_text(data=axis_2, aes(label=.data$label, x=.data$x, y=.data$y + 0.075)) +
     labs(title = "Multi-collinearity plot") +
     guides(
-      # colour = FALSE,
-      # size = guide_legend(title = "MC categories"),
-      colour = guide_legend(title = "MC categories"),
+      colour = guide_legend(title = "Strength of MC"),
       size = FALSE,
       linetype = FALSE,
-      alpha = FALSE)
-  gg
-  return(gg)
+      alpha = FALSE) +
+    theme_bw() +
+    theme(axis.title=element_blank(),
+          axis.text=element_blank(),
+          axis.ticks=element_blank(),
+          panel.grid=element_blank(),
+          legend.position = "bottom")
+
+  if(label_dodge){
+    result = gg + scale_y_continuous(limits=c(-0.35, 1.2), expand = c(0, 0)) +
+      scale_x_continuous(limits=c(-0.2, 1.2), expand = c(0, 0))
+  } else {
+    result = gg + scale_y_continuous(limits=c(-0.2, 1.2), expand = c(0, 0))
+  }
+
+  return(result)
 }
 
 rangeTransform = function(x){
@@ -121,23 +107,21 @@ make_plotdf = function(MC_ordered){
   # size_cat_3 = 0.7*size_cat_5
   # size_cat_4 = 0.9*size_cat_5
 
-  size_cat_1 = 0.1
-  size_cat_2 = 0.15
-  size_cat_3 = 0.2
-  size_cat_4 = 0.4
-  size_cat_5 = 0.6
+  # size_cat_1 = 0.1
+  # size_cat_2 = 0.15
+  # size_cat_3 = 0.2
+  # size_cat_4 = 0.4
+  # size_cat_5 = 0.6
 
   ggplot_size_cat = dplyr::case_when(
-    thickness <= size_cat_1 ~ "category1",
-    thickness <= size_cat_2 ~ "category2",
-    thickness <= size_cat_3 ~ "category3",
-    thickness <= size_cat_4 ~ "category4",
-    thickness <= size_cat_5 ~ "category5",
-    thickness > size_cat_5 ~ "category5"
-  )
+    thickness <= 0.2 ~ "Small",
+    thickness <= 0.3 ~ "Medium",
+    TRUE ~ "Strong")
+
+
   ggplot_size_cat = factor(
     ggplot_size_cat,
-    levels = paste0("category", 1:5))
+    levels = c("Small", "Medium", "Strong"))
 
   plotdf = dplyr::mutate(melt_MC, thickness, ggplot_size_cat)
 
