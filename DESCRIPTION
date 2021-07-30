@@ -1,7 +1,7 @@
 Package: mcvis
 Type: Package
 Title: Multi-Collinearity Visualization
-Version: 1.0.6
+Version: 1.0.8
 Authors@R: c(
     person(given = "Kevin", family = "Wang", 
     email = "kevin.wang09@gmail.com", role = c("aut", "cre")),
@@ -15,15 +15,15 @@ Description: Visualize the relationship between linear regression variables and 
 Encoding: UTF-8
 Imports: assertthat, igraph, ggplot2, purrr, magrittr, reshape2, shiny,
         dplyr, psych, rlang
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.1.9001
 License: GPL-3
-Suggests: testthat (>= 2.1.0), covr, knitr, mplot, rmarkdown
+Suggests: testthat (>= 2.1.0), covr, knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2020-10-03 03:44:50 UTC; kevinwang
+Packaged: 2021-07-30 02:56:36 UTC; kevinwang
 Author: Kevin Wang [aut, cre],
   Chen Lin [aut],
   Samuel Mueller [aut]
 Maintainer: Kevin Wang <kevin.wang09@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-10-03 05:30:02 UTC
+Date/Publication: 2021-07-30 08:20:05 UTC

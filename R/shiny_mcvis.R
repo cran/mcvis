@@ -7,6 +7,7 @@
 #' @importFrom dplyr case_when
 #' @importFrom dplyr mutate
 #' @importFrom psych describe
+#' @return A shiny app allowing for interactive exploration of mcvis results
 #' @export
 #' @examples
 #' if(interactive()){

@@ -6,7 +6,6 @@
 #' @param standardise_method The standardisation method for the data.
 #' Currently supports 'euclidean' (default, centered by mean and divide by Euclidiean length)
 #' and 'studentise' (centred by mean and divide by standard deviation)
-#' and 'none' (no standardisation)
 #' @param times Number of resampling runs we perform. Default is set to 1000.
 #' @param k Number of partitions in averaging the MC-index. Default is set to 10.
 #' @return A list of outputs:
@@ -70,11 +69,10 @@ mcvis <- function(X, sampling_method = "bootstrap", standardise_method = "studen
 
     list_mcvis_result = switch(standardise_method,
                                euclidean = purrr::map(.x = index, .f = ~ one_mcvis_euclidean(X = X, index = .x)),
-                               studentise = purrr::map(.x = index, .f = ~ one_mcvis_studentise(X = X, index = .x)),
-                               none = purrr::map(.x = index, .f = ~ one_mcvis_none(X = X, index = .x)))
+                               studentise = purrr::map(.x = index, .f = ~ one_mcvis_studentise(X = X, index = .x)))
 
-    list_tau = purrr::map(list_mcvis_result, "tau") %>% do.call(cbind, .)
-    list_vif = purrr::map(list_mcvis_result, "vif") %>% do.call(cbind, .)
+    list_tau = do.call(cbind, purrr::map(list_mcvis_result, "tau"))
+    list_vif = do.call(cbind, purrr::map(list_mcvis_result, "vif"))
     mean_vif = rowMeans(list_vif)
     names(mean_vif) = col_names
 
@@ -146,27 +144,3 @@ one_mcvis_studentise = function(X, index) {
     result = list(tau = tau, vif = vif)
     return(result)
 }
-
-one_mcvis_none = function(X, index) {
-    X1 = X[index, ]  ## Resampling on the rows
-    p = ncol(X1)
-
-    r2 = vector("numeric", p)
-
-    for (j in 1:p) {
-        y = X1[, j, drop = FALSE]
-        r2[j] = summary(lm(y ~ X1[, -j]))$r.squared
-    }
-    vif = 1/(1 - r2)
-    names(vif) = colnames(X1)
-
-    crossprodX1 = crossprod(X1, X1)
-    svd_obj = svd(crossprodX1)
-    tau = 1/svd_obj$d
-
-    result = list(tau = tau, vif = vif)
-    return(result)
-}
-
-## quiets concerns of R CMD check re: the .'s that appear in pipelines
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))

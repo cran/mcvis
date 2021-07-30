@@ -11,6 +11,9 @@ shiny_mcvis(mcvis_result, X)
 
 \item{X}{The original X matrix}
 }
+\value{
+A shiny app allowing for interactive exploration of mcvis results
+}
 \description{
 Shiny app for mcvis exploration
 }

@@ -10,9 +10,6 @@ mcvis_result = mcvis(X, standardise_method = "studentise")
 ## euclidean
 mcvis_result = mcvis(X, standardise_method = "euclidean")
 
-## none
-mcvis_result = mcvis(X, standardise_method = "none")
-
 ## Test sampling methods
 mcvis(X, sampling_method = "cv")
 testthat::expect_error(mcvis(X, sampling_method = "abc"))

@@ -105,7 +105,7 @@ shinyServer(function(input, output, session) {
       geom_text(data=axis_2, aes(label=label, x=x, y=y + 0.075)) +
       labs(caption = "Largest Eigen = smallest Eigenvalue") +
       guides(
-        colour = FALSE,
+        colour = "none",
         size = guide_legend(title = ""),
         alpha = guide_legend(title = "")
       )

@@ -60,9 +60,9 @@ ggplot_mcvis = function(mcvis_result,
     labs(title = "Multi-collinearity plot") +
     guides(
       colour = guide_legend(title = "Strength of MC"),
-      size = FALSE,
-      linetype = FALSE,
-      alpha = FALSE) +
+      size = "none",
+      linetype = "none",
+      alpha = "none") +
     theme_bw() +
     theme(axis.title=element_blank(),
           axis.text=element_blank(),
